@@ -54,7 +54,8 @@ class Stock_Extractor(object):
         additionalInfo = self.client.getAdditionalInfo()
         self.stock = Stock(
             data,
-            time_index='Date'
+            time_index='Date',
+            symbol=self.symbol
             )
         return self.stock
 
@@ -83,7 +84,8 @@ class Stock_Extractor(object):
         additionalInfo = self.client.getAdditionalInfo()
         self.stock = Stock(
             data,
-            time_index='Date'
+            time_index='Date',
+            symbol = self.symbol
             )
         return self.stock
 
@@ -184,8 +186,15 @@ class Portfolio_Extractor(object):
             return stockDict
 
     def _get_stock_data(self, stockList, symbolList, func, time_val, *args, **kwargs):
-        for symbol in symbolList:
-            stock_data = Stock_Extractor(symbol, self.engine, *self.args, **self.kwargs)
+        for i in range(len(symbolList)):
+            symbol = symbolList[i]
+            if self.engine == "investing":
+                if 'country' not in self.kwargs:
+                    raise ValueError("Country must be included while using the investing engine")
+                country = self.kwargs['country'][i]
+                stock_data = Stock_Extractor(symbol, self.engine, *self.args, country = country)
+            else:
+                stock_data = Stock_Extractor(symbol, self.engine, *self.args, **self.kwargs)
             extract_func = getattr(stock_data,func)
             if len(time_val) >1:
                 stock_data = extract_func(time_val[0], time_val[1])
